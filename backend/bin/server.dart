@@ -75,19 +75,21 @@ Future<Response> _submitHandler(Request req) async {
 
 void main(List<String> args) async {
   final corsHeaders = createMiddleware(requestHandler: (req) {
-    if (req.method == 'OPTION') {
+    if (req.method == 'OPTIONS') {
       return Response.ok('', headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Method': 'GET, POST, PUT, PATCH, DELETE, HEAD',
-        'Access-Control-Allow-Header': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Origin, Content-Type, Authorization, X-Requested-With',
+
       });
     }
     return null;
   }, responseHandler: (res) {
     return res.change(headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Method': 'GET, POST, PUT, PATCH, DELETE, HEAD',
-      'Access-Control-Allow-Header': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Origin, Content-Type, Authorization, X-Requested-With',
+
     });
   });
 
