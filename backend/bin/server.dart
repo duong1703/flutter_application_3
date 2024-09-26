@@ -28,8 +28,7 @@ Response _notFoundHandler(Request req) {
 
 //Response check handler
 Response _checkHandler(Request req) {
-  return Response.ok(
-      json.encode({'message': 'Welcome to website'}),
+  return Response.ok(json.encode({'message': 'Welcome to website'}),
       headers: _headers);
 }
 
@@ -75,15 +74,34 @@ Future<Response> _submitHandler(Request req) async {
 }
 
 void main(List<String> args) async {
+  final corsHeaders = createMiddleware(requestHandler: (req) {
+    if (req.method == 'OPTION') {
+      return Response.ok('', headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Method': 'GET, POST, PUT, PATCH, DELETE, HEAD',
+        'Access-Control-Allow-Header': 'Content-Type, Authorization',
+      });
+    }
+    return null;
+  }, responseHandler: (res) {
+    return res.change(headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Method': 'GET, POST, PUT, PATCH, DELETE, HEAD',
+      'Access-Control-Allow-Header': 'Content-Type, Authorization',
+    });
+  });
+
   // Use any available host or container IP (usually `0.0.0.0`).
   final ip = InternetAddress.anyIPv4;
 
   // Configure a pipeline that logs requests.
-  final handler =
-      Pipeline().addMiddleware(logRequests()).addHandler(_router.call);
+  final handler = Pipeline()
+      .addMiddleware(corsHeaders)
+      .addMiddleware(logRequests())
+      .addHandler(_router.call);
 
   // For running in containers, we respect the PORT environment variable.
   final port = int.parse(Platform.environment['PORT'] ?? '8080');
   final server = await serve(handler, ip, port);
-  print('Server listening on port ${server.port}');
+  print('Server running on http://${server.address.host}:${server.port}');
 }
